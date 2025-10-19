@@ -8,7 +8,7 @@
 
 Trabalho apresentado ao curso [BI MASTER](https://ica.ele.puc-rio.br/cursos/mba-bi-master/) como pré‑requisito para conclusão de curso e obtenção de crédito na disciplina "Projetos de Sistemas Inteligentes de Apoio à Decisão".
 
-- [Link para o código](https://github.com/paulofjm/Nexus_project)
+- [Link para o código](https://github.com/paulofjm/Nexus_Project_AI)
 
 ---
 
@@ -243,4 +243,5 @@ python reset_agent.py
 ---
 
 > **Observação**: a utilização de modelos OpenAI pode gerar custos na sua conta. Certifique‑se de revisar as chaves e limites antes de executar em produção.
+
 
