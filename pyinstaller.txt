@@ -1,0 +1,34 @@
+Execute o código abaixo no terminal para gerar o executável do NexusAgent:
+
+pyinstaller --noconfirm --onedir --name NexusAgent `
+  --icon=logo_nexus.ico `
+  --add-data "data;data" `
+  --add-data "main.py;." `
+  --add-data "core;core" `
+  --add-data "models;models" `
+  --add-data "nodes_graph;nodes_graph" `
+  --add-data "utils;utils" `
+  --add-data "local/Tesseract-OCR/tesseract.exe;Tesseract-OCR" `
+  --add-data "local/Tesseract-OCR/tessdata;tessdata" `
+  --add-binary "env_nexus/Library/bin/mkl_*.dll;." `
+  --add-binary "env_nexus/Library/bin/libiomp5md.dll;." `
+  --collect-all "mss" `
+  --collect-all "langchain" `
+  --collect-all "langchain_community" `
+  --collect-all "langchain_openai" `
+  --collect-all "psutil" `
+  --collect-all "pygetwindow" `
+  --collect-all "pyautogui" `
+  --hidden-import "pynput.keyboard._win32" `
+  --hidden-import "pynput.mouse._win32" `
+  --collect-all "sklearn" `
+  --collect-all "sklearn.externals" `
+  --collect-all "sklearn.externals.array_api_compat" `
+  --add-data "env_nexus/Lib/site-packages/llama_cpp/lib;llama_cpp/lib" `
+  --add-data "env_nexus/Lib/site-packages/llama_cpp;llama_cpp" `
+  --hidden-import "pydantic.deprecated.decorator" `
+  --collect-all "watchdog" `
+  --collect-all "watchdog.observers" `
+  --collect-all "watchdog.events" `
+  --collect-all "langgraph" `
+  nexus_gui_qt.py
