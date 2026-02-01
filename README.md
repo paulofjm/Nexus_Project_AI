@@ -105,7 +105,7 @@ Os dados do arquivo `activity_raw_buffer.json` indicam o seguinte sobre o uso de
   - `gpt-4o-mini` foi o único que entregou resposta coerente e estruturada com tempo bem menor dentro do conjunto logado.
 
 - **Desempenho vs. viabilidade operacional (local vs API):**
-  - Os modelos locais testados ficaram na faixa de **~1.7 a 5.7 minutos por resposta** (105s a 343s). Para um agente “conversando com o computador” isso é ruim: o usuário perde o timing da tarefa. Já via API a resposta foi obtida em 26 segundos, tempo aceitável para interação.
+  - Os modelos locais testados ficaram na faixa de **~1.7 a 5.7 minutos por resposta** (105s a 343s). Para um agente “conversando com o computador” isso é ruim: o usuário perde o timing da tarefa. Já via API a resposta foi obtida em 23 segundos, tempo aceitável para interação.
 
 
 ### Recomendação Final
