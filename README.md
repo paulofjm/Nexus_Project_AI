@@ -1,4 +1,4 @@
-# Nexus: Um Agente Pessoal de Monitoramento Contextual de Atividades de Desenvolvimento com IA
+# Nexus: Um Agente Pessoal de Monitoramento Contextual para Atividades de Desenvolvimento com IA
 
 #### Aluno: [Paulo Moura](https://github.com/paulofjm)
 
