@@ -247,6 +247,8 @@ class NexusApp(QWidget):
 
         main_chat_layout.addWidget(chat_panel)
 
+
+
     def _on_model_changed(self, model_name=""):
         selected_model = self.model_combo.currentText()
         is_local = "gguf" in selected_model.lower() or "ollama" in selected_model.lower()

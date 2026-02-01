@@ -35,126 +35,95 @@ Projetos de software modernos envolvem múltiplas janelas, IDEs, navegadores e d
 
 ### 3. Resultados
 
-# Análise Quantitativa de Desempenho de Modelos no Agente Nexus
+# Estatísticas dos Testes (logs de 2026-02-01)
 
 ## 1. Metodologia de Análise
 
-A análise a seguir foi conduzida correlacionando dados de múltiplos arquivos de log gerados pelo sistema Nexus em 2025-07-08. As principais fontes de dados foram:
+A análise a seguir foi conduzida correlacionando dados de múltiplos arquivos de log gerados pelo sistema Nexus em 2025-02-01. As principais fontes de dados foram:
 
 - **monitor_log.json**: Para rastrear a sequência de execução dos nós do grafo, os modelos de linguagem (LLMs) utilizados em cada etapa e o tempo de inferência individual de cada chamada.
 - **turns.json**: Para obter a pergunta exata do usuário e a resposta final gerada pelo agente, incluindo o tempo total de processamento reportado.
 - **activity_raw_buffer.json**: Para extrair dados de utilização de recursos do sistema (CPU e memória) durante os períodos de teste.
 
-A análise foca nos casos de uso mais recentes para avaliar o desempenho dos diferentes LLMs configurados para os papéis de "Agente Roteador" e "Agente de Geração". A utilização de GPU não foi registrada nos logs, portanto não está incluída nesta análise.
+A análise foca na explicação de um código python aberto no Visual Studio Code, para avaliar o desempenho dos diferentes LLMs configurados para os papéis de "Agente Roteador" e "Agente de Geração".
 
-## 2. Análise de Casos de Uso (Recentes)
+## 2. Hardware do ambiente de teste
 
-Foram analisadas três interações distintas que ilustram o comportamento do sistema com diferentes configurações de modelo.
+- SSD: **1 TB**
+- RAM total: **64 GB**
+- CPU: os logs não registram modelo/núcleos/clock; somente **% de uso**.
 
-### Caso de Estudo 1: Pergunta sobre Código com Roteador Ineficaz
+## 3. Modelos testados (5 execuções)
 
-- **Pergunta do Usuário:** "explique cada nó do langgraph_nodes.py"
-- **Timestamp da Interação:** ~20:09
+Para todos os modelos foi realizada a mesma solicitação: "Explique o código que estou trabalhando no momento".
 
-**Etapa 1: Roteamento (Classificação de Intenção)**
-- Modelo Utilizado: `gemma:2b (Ollama)`
-- Tempo de Inferência: 5.89 segundos
-- Resultado da Classificação: `temporal`
-- **Análise:** Falha Crítica. O modelo falhou em identificar a intenção `codigo` e classificou incorretamente como `temporal`, uma busca por atividades em um período de tempo.
-
-
-**Etapa 2: Geração de Resposta (com Contexto Errado)**
-- Modelo Utilizado: `llama3.1:8b (Ollama)`
-- Tempo de Inferência: 12.67 segundos
-- Contexto Recebido: Devido ao erro de roteamento, o modelo recebeu um resumo das atividades recentes do usuário em vez do resumo do código do projeto.
-- Resposta Final: Genérica e incorreta. Descreveu o que são "nós" de forma abstrata, sem qualquer relação com o arquivo langgraph_nodes.py.
-- Tempo Total Reportado: 166.62 segundos (valor parece incluir tempo de espera ou atividades em background).
-
-Esse caso evidencia como um erro de roteamento de intenção compromete toda a cadeia do agente. Mesmo que o modelo de geração seja adequado, a resposta sai incorreta por receber contexto irrelevante. Mostra a importância de calibrar bem o roteador, pois ele atua como o elo crítico do fluxo.
-
----
-
-### Caso de Estudo 2: Pergunta sobre Código com Roteador Eficaz (Modelo de Código Fraco)
-
-- **Pergunta do Usuário:** "explique o main.py"
-- **Timestamp da Interação:** ~19:59 (UTC-3)
-
-**Etapa 1: Roteamento (Classificação de Intenção)**
-- Modelo Utilizado: `gpt-4o-mini (OpenAI)`
-- Tempo de Inferência: 3.15 segundos
-- Resultado da Classificação: `codigo`
-- **Análise:** Sucesso. O modelo classificou a intenção corretamente, direcionando a pergunta para o fluxo de análise de código.
-
-**Etapa 2: Geração de Resposta (com Contexto Correto)**
-- Modelo Utilizado: `deepseek-coder:6.7b-instruct (Ollama)`
-- Tempo de Inferência: 102.86 segundos
-- Contexto Recebido: O modelo recebeu o resumo do código do projeto, como esperado.
-- Resposta Final: Evasiva e de baixa qualidade. (Ex: "...não há muitas informações suficientes para entender...").
-- Tempo Total Reportado: 110.27 segundos.
-
-O roteamento funcionou corretamente, mas a fraqueza do modelo de geração de código reduziu a qualidade da resposta. Demonstra que um bom roteador precisa ser acompanhado por modelos especializados para garantir profundidade técnica e clareza explicativa.
+| Execução | Timestamp | Modelo | Tempo Total (s) |
+|---|---|---|---|
+| 1 | 2026-02-01T16:03:45 | `gpt-4o-mini` | 23.07 |
+| 2 | 2026-02-01T15:19:11 | `deepseek-coder:6.7b-instruct` | 343.51 |
+| 3 | 2026-02-01T15:25:58 | `llama3.1:8b` | 245.39 |
+| 4 | 2026-02-01T15:33:59 | `phi3:mini` | 328.52 |
+| 5 | 2026-02-01T16:06:26 | `gemma:2b` | 105.50 |
 
 
----
+## 4. Estatísticas de latência (ponta-a-ponta)
+Latência (Tempo Total, s, n=5)
+| Métrica | Valor | 
+|---|---| 
+| min | 23.07 | 
+| P25 | 105.50 | 
+| mediana | 245.39 | 
+| média | 209.20 | 
+| P75 | 328.52 | 
+| max | 343.51 |
 
-### Caso de Estudo 3: Pergunta sobre Código com Roteador e Gerador Eficazes (Sucesso Pleno)
-
-- **Pergunta do Usuário:** "o que o código do projeto nexus faz?"
-- **Timestamp da Interação:** ~19:58 (UTC-3)
-
-**Etapa 1: Roteamento (Classificação de Intenção)**
-- Modelo Utilizado: `gpt-4o-mini (OpenAI)`
-- Tempo de Inferência: 1.07 segundos
-- Resultado da Classificação: `codigo`
-- **Análise:** Sucesso. Roteamento perfeito.
-
-**Etapa 2: Geração de Resposta (com Contexto Correto)**
-- Modelo Utilizado: `gpt-4o-mini (OpenAI)`
-- Tempo de Inferência: 13.53 segundos
-- Contexto Recebido: Resumo do código do projeto.
-- Resposta Final: Excelente. Detalhada, precisa e bem estruturada, explicando corretamente todos os componentes do projeto.
-- Tempo Total Reportado: 14.6 segundos (soma das inferências do monitor_log.json).
-
-Esse é o cenário ideal: roteamento eficaz e modelo de geração compatível com a tarefa. O resultado foi resposta precisa, estruturada e contextualizada, confirmando que o fluxo só é robusto quando há sinergia entre roteador e gerador, além de baixo tempo de latência.
-
-
----
-
-## 3. Tabela Comparativa de Desempenho
-
-| Caso de Estudo | Pergunta                | Modelo Roteador | Tempo Roteador (s) | Roteamento Correto? | Modelo Gerador    | Tempo Gerador (s) | Qualidade da Resposta    |
-|----------------|-------------------------|-----------------|--------------------|---------------------|-------------------|-------------------|--------------------------|
-| 1              | explique cada nó...     | gemma:2b        | 5.89               | Não                 | llama3.1:8b       | 12.67             | Inútil / Genérica        |
-| 2              | explique o main.py      | gpt-4o-mini     | 3.15               | Sim                 | deepseek-coder    | 102.86            | Fraca / Evasiva          |
-| 3              | o que o projeto faz?    | gpt-4o-mini     | 1.07               | Sim                 | gpt-4o-mini       | 13.53             | Excelente / Precisa      |
-
----
-
-## 4. Análise de Utilização de Recursos
+## 5. Uso de CPU e memória (telemetria disponível)
 
 Os dados do arquivo `activity_raw_buffer.json` indicam o seguinte sobre o uso de recursos do sistema durante os testes:
 
-- **CPU:** A utilização variou significativamente, com picos de 20.6% e 39.9% durante a execução de tarefas e monitoramento. O uso médio em períodos de menor atividade ficou entre 1.9% e 2.7%.
-- **Memória:** O uso de memória do sistema manteve-se consistentemente alto, variando entre 48.0% e 63.3%. Isso sugere que os modelos de linguagem locais, mesmo quando não estão em uso ativo, consomem uma quantidade substancial de RAM.
-- **GPU:** Não foram encontrados dados de utilização de GPU nos logs fornecidos.
+- Intervalo de telemetria: 2026-02-01T15:35:32.647098 → 2026-02-01T15:39:50.186487 | registros: 14 (válidos p/ CPU/RAM: 13)
+- CPU (%): min 10.6 | mediana 37.8 | média 39.8 | pico 69.3
+- RAM (%): min 53.4 | mediana 56.1 | média 55.8 | pico 56.4
+- RAM (GB, total 64): min 34.2 | mediana 35.9 | média 35.7 | pico 36.1
 
----
 
-## 5. Conclusões e Recomendações para o TCC
+## 6. Resultados e Recomendação Final
 
-- **Criticidade do Agente Roteador:** A análise demonstra empiricamente que a eficácia do agente especialista depende criticamente da precisão do Agente Roteador. O modelo `gemma:2b` provou ser inadequado para a tarefa de classificação de intenção com o prompt atual, resultando em falhas em cascata. O `gpt-4o-mini`, por outro lado, apresentou 100% de acerto nos casos analisados.
+- **Modelos efetivamente testados (5):** `gpt-4o-mini`, `gemma:2b`, `llama3.1:8b`, `phi3:mini`, `deepseek-coder:6.7b-instruct`.
 
-- **Desempenho vs. Custo (Inferência Local vs. API):** Os modelos locais (Ollama) apresentam a vantagem de não terem custo por chamada, mas o `deepseek-coder` demonstrou um tempo de inferência significativamente alto (102.86s) e uma qualidade de resposta inferior para uma tarefa complexa. O `gpt-4o-mini` ofereceu um equilíbrio superior entre tempo de resposta (1-3s para roteamento, 13s para geração) e qualidade excepcional.
+- **Desempenho real (Tempo Total por resposta, a partir dos logs):**
+  - `gpt-4o-mini`: **23.07s** — melhor tempo do conjunto.
+  - `gemma:2b`: **105.50s–114.44s** — Não conseguiu explicar o código, como solicitado.
+  - `llama3.1:8b`: **245.39s** — lento, porém entregou uma explicação mais estruturada.
+  - `phi3:mini`: **328.52s** — muito lento e tende a “inventar” solução (gera código/abordagem sem amarrar no contexto real).
+  - `deepseek-coder:6.7b-instruct`: **343.51s** — o mais lento e resposta genérica (“boas práticas”), sem explicar o código de fato.
 
-- **Impacto do Contexto:** O Caso de Estudo 1 prova que mesmo um modelo potente como o `llama3.1:8b` é ineficaz se alimentado com um contexto incorreto devido a uma falha de roteamento. A arquitetura de RAG (Recuperação Aumentada por Geração) só funciona se a etapa de roteamento inicial for precisa.
 
-- **Recomendação Final:** Para a implementação final do projeto, recomenda-se fixar o `gpt-4o-mini` como o "Agente Roteador" padrão. Essa única mudança garantirá a estabilidade do sistema e permitirá uma avaliação mais justa do desempenho dos diferentes modelos de geração (locais ou via API) para as tarefas de Atividade e Código, pois eles sempre receberão o direcionamento e o contexto corretos.
+- **Criticidade do Agente Roteador (efeito dominó é real):**
+  - Quando o roteamento falha, o resto vira ruído: modelo “bom” não compensa contexto errado.
+  - Nos testes, `gemma:2b` mostrou comportamento inconsistente para o papel de roteamento: em vez de classificar/rotear de forma confiável, ele caiu em geração de conteúdo fora do esperado (ex.: despejo de código), o que quebra o pipeline.
+  - `gpt-4o-mini` foi o único que entregou resposta coerente e estruturada com tempo bem menor dentro do conjunto logado.
 
----
+- **Desempenho vs. viabilidade operacional (local vs API):**
+  - Os modelos locais testados ficaram na faixa de **~1.7 a 5.7 minutos por resposta** (105s a 343s). Para um agente “conversando com o computador” isso é ruim: o usuário perde o timing da tarefa. Já via API a resposta foi obtida em 26 segundos, tempo aceitável para interação.
 
-### 6. Demonstração da Interface do Nexus Agent
+
+### Recomendação Final
+
+1. **Fixar `gpt-4o-mini` como Agente Roteador padrão** (produção).  
+   Motivo: é o componente mais crítico; com roteamento ruim, todo o resto perde valor. E ele foi o mais rápido no log.
+
+2. **Usar modelo local apenas onde fizer sentido e não quebrar a experiência:**
+   - Local para tarefas “não interativas” (batch, sumarização offline, compressão de memória, embeddings), não para resposta imediata ao usuário.
+   - Para geração local “online”, é necessario reduzir latência (GPU/quantização agressiva/engine mais eficiente).
+   
+
+
+### 7. Demonstração da Interface do Nexus Agent
 
 Abaixo estão algumas capturas de tela da interface desenvolvida, ilustrando como o usuário interage com o sistema:
+
+*(Configuração Ilustrativa)*
 
 ### Tela – Configuração de Modelos
 ![Configuração de Modelos](imgs/nexus_ft1.png)
