@@ -39,7 +39,7 @@ Projetos de software modernos envolvem múltiplas janelas, IDEs, navegadores e d
 
 ## 1. Metodologia de Análise
 
-A análise a seguir foi conduzida correlacionando dados de múltiplos arquivos de log gerados pelo sistema Nexus em 2025-02-01. As principais fontes de dados foram:
+A análise a seguir foi conduzida correlacionando dados de múltiplos arquivos de log gerados pelo sistema Nexus em 2026-02-01. As principais fontes de dados foram:
 
 - **monitor_log.json**: Para rastrear a sequência de execução dos nós do grafo, os modelos de linguagem (LLMs) utilizados em cada etapa e o tempo de inferência individual de cada chamada.
 - **turns.json**: Para obter a pergunta exata do usuário e a resposta final gerada pelo agente, incluindo o tempo total de processamento reportado.
